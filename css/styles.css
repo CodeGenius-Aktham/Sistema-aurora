@@ -1,0 +1,259 @@
+ :root {
+
+     --primary: #f97316;
+
+     --secondary: #ea580c;
+
+     --accent: #38bdf8;
+
+     --bg-dark: #020617;
+
+     --card-bg: rgba(15, 23, 42, 0.8);
+
+ }
+
+
+ body {
+     font-family: 'Plus Jakarta Sans', sans-serif;
+     background: radial-gradient(circle at top right, #1e293b, #020617);
+     color: #f8fafc;
+     display: flex;
+     height: 100vh;
+     /* Elimina esta línea: overflow: hidden; */
+ }
+
+ .font-mono {
+     font-family: 'JetBrains Mono', monospace;
+ }
+
+
+
+ .glass-sidebar {
+
+     background: rgba(2, 6, 23, 0.95);
+
+     backdrop-filter: blur(24px);
+
+     border: 1px solid rgba(255, 255, 255, 0.05);
+
+     margin: 1rem;
+
+     border-radius: 1.5rem;
+
+     width: 280px;
+
+     display: flex;
+
+     flex-direction: column;
+
+     padding: 2rem 1rem;
+
+ }
+
+
+
+ .main-view {
+     flex: 1;
+     height: 100vh;
+     /* Asegura que ocupe el alto de la pantalla */
+     overflow-y: auto;
+     /* Esto permite el scroll interno */
+     padding: 2rem;
+ }
+
+
+
+ .aurora-card {
+
+     background: var(--card-bg);
+
+     backdrop-filter: blur(16px);
+
+     border: 1px solid rgba(255, 255, 255, 0.08);
+
+     border-radius: 1.5rem;
+
+     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+ }
+
+
+
+ .nav-link {
+     display: flex;
+     align-items: center;
+     gap: 12px;
+     padding: 14px 18px;
+     border-radius: 1rem;
+     color: #64748b;
+     font-weight: 600;
+     /* Animación solo de color y fondo, mucho más rápida */
+     transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+     margin-bottom: 0.5rem;
+ }
+
+ .nav-link:hover {
+     background-color: rgba(255, 255, 255, 0.05);
+     color: #f1f5f9;
+ }
+
+ .nav-link.active {
+     background: linear-gradient(135deg, #ea580c, #c2410c);
+     color: white;
+     /* Quitamos la sombra animada pesada para mejorar la fluidez */
+     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+     transform: scale(1.02);
+     /* Un toque sutil de profundidad */
+ }
+
+
+ .action-btn {
+
+     background: linear-gradient(135deg, var(--primary), var(--secondary));
+
+     color: white;
+
+     padding: 12px 24px;
+
+     border-radius: 1rem;
+
+     font-weight: 700;
+
+     transition: all 0.3s ease;
+
+ }
+
+
+
+ .action-btn:hover {
+
+     transform: translateY(-2px);
+
+     filter: brightness(1.1);
+
+     box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3);
+
+ }
+
+
+
+ input,
+ select,
+ textarea {
+
+     background: rgba(2, 6, 23, 0.7) !important;
+
+     border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+     border-radius: 0.75rem !important;
+
+     padding: 12px 16px !important;
+
+     color: white !important;
+
+     outline: none !important;
+
+ }
+
+
+
+ input:focus {
+
+     border-color: var(--primary) !important;
+
+     box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+
+ }
+
+
+
+ .product-img-preview {
+
+     width: 44px;
+
+     height: 44px;
+
+     object-fit: cover;
+
+     border-radius: 0.75rem;
+
+     background: #0f172a;
+
+     border: 1px solid rgba(255, 255, 255, 0.1);
+
+ }
+
+
+
+ .qty-control {
+
+     display: flex;
+
+     align-items: center;
+
+     background: rgba(0, 0, 0, 0.3);
+
+     border-radius: 0.75rem;
+
+     padding: 2px;
+
+     border: 1px solid rgba(255, 255, 255, 0.05);
+
+ }
+
+
+
+ .qty-btn {
+
+     width: 28px;
+
+     height: 28px;
+
+     display: flex;
+
+     align-items: center;
+
+     justify-content: center;
+
+     border-radius: 0.5rem;
+
+     transition: all 0.2s;
+
+ }
+
+
+
+ .qty-btn:hover {
+     background: rgba(255, 255, 255, 0.1);
+ }
+
+ .qty-btn.plus:hover {
+     color: #4ade80;
+ }
+
+ .qty-btn.minus:hover {
+     color: #fb7185;
+ }
+
+
+
+ /* Modal Styles */
+
+ #modal-overlay {
+
+     background: rgba(2, 6, 23, 0.85);
+
+     backdrop-filter: blur(8px);
+
+ }
+
+
+
+ ::-webkit-scrollbar {
+     width: 5px;
+ }
+
+ ::-webkit-scrollbar-thumb {
+     background: #334155;
+     border-radius: 10px;
+ }

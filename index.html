@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Aurora POS - Auto Parts Pro</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    
+</head>
+
+<body>
+ 
+
+    <!-- Modal de Error (Duplicados) -->
+
+    <div id="modal-error" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+
+        <div id="modal-overlay" class="absolute inset-0"></div>
+
+        <div
+            class="aurora-card relative w-full max-w-md p-8 border-rose-500/30 text-center animate-in zoom-in duration-300">
+
+            <div class="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+
+                <i data-lucide="alert-triangle" class="text-rose-500 w-10 h-10"></i>
+
+            </div>
+
+            <h3 class="text-2xl font-black text-white mb-2">Producto Existente</h3>
+
+            <p class="text-slate-400 mb-8" id="error-message">Ya existe un producto registrado con este código en el
+                inventario.</p>
+
+            <button onclick="closeErrorModal()"
+                class="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl transition-all">
+
+                Entendido
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Sidebar -->
+
+    <aside class="glass-sidebar">
+
+        <div class="flex items-center gap-3 px-3 mb-10">
+
+            <div
+                class="w-11 h-11 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20">
+
+                <i data-lucide="wrench" class="text-white w-6 h-6"></i>
+
+            </div>
+
+            <div>
+
+                <span class="text-lg font-black tracking-tighter block leading-none">AURORA AUTO</span>
+
+                <span class="text-[9px] font-bold text-orange-500 uppercase tracking-[0.2em]">Parts Management</span>
+
+            </div>
+
+        </div>
+
+
+
+        <nav class="flex-1">
+
+            <button onclick="showSection('inventory')" id="nav-inventory" class="nav-link active w-full text-left">
+
+                <i data-lucide="database"></i> Inventario
+
+            </button>
+
+            <button onclick="showSection('pos')" id="nav-pos" class="nav-link w-full text-left">
+
+                <i data-lucide="shopping-cart"></i> Ventas
+
+            </button>
+
+            <button onclick="showSection('tasa')" id="nav-tasa" class="nav-link w-full text-left">
+
+                <i data-lucide="coins"></i> Tasa BCV
+
+            </button>
+
+            <button onclick="showSection('dashboard')" id="nav-dashboard" class="nav-link w-full text-left">
+
+                <i data-lucide="pie-chart"></i> Reportes
+
+            </button>
+
+        </nav>
+
+
+
+        <div class="mt-auto p-4 rounded-2xl bg-slate-900 border border-slate-800">
+
+            <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Dólar BCV</div>
+
+            <div class="text-xl font-black text-white flex justify-between items-center" id="sidebar-tasa">
+
+                <span>0.00</span>
+
+                <span class="text-xs text-orange-500">BS</span>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+
+    <main class="main-view">
+
+
+
+        <!-- SECCIÓN: INVENTARIO -->
+
+        <section id="section-inventory" class="space-y-6">
+
+            <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+                <div>
+
+                    <h1 class="text-4xl font-black text-white">Stock de Repuestos</h1>
+
+                    <p class="text-slate-400 text-sm">Gestiona productos, precios y niveles de existencia.</p>
+
+                </div>
+
+                <div class="flex bg-slate-950 p-1 rounded-xl border border-white/5">
+
+                    <button onclick="toggleLoadMode('single')" id="btn-mode-single"
+                        class="px-5 py-2 rounded-lg text-xs font-bold transition-all bg-orange-600 text-white">Nuevo
+                        Producto</button>
+
+                    <button onclick="toggleLoadMode('bulk')" id="btn-mode-bulk"
+                        class="px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-500">Importar
+                        CSV</button>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- Buscador de Inventario -->
+
+            <div class="aurora-card p-4 flex items-center px-6 border-orange-500/20 border">
+
+                <i data-lucide="search" class="text-orange-500 mr-4 w-5 h-5"></i>
+
+                <input type="text" id="inventory-search" oninput="renderInventory()"
+                    class="w-full bg-transparent border-none focus:ring-0 text-lg py-2"
+                    placeholder="Buscar por nombre o código OEM...">
+
+            </div>
+
+
+
+            <!-- Formulario de Carga Directa -->
+
+            <div id="load-single" class="aurora-card p-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                    <div class="md:col-span-2 space-y-1">
+
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Nombre del Repuesto</label>
+
+                        <input type="text" id="p-name" class="w-full" placeholder="Ej: Kit de Embrague Toyota">
+
+                    </div>
+
+                    <div class="space-y-1">
+
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Código / OEM</label>
+
+                        <div class="relative">
+
+                            <input type="text" id="p-code" class="w-full font-mono text-orange-400"
+                                placeholder="77820-X">
+
+                            <i data-lucide="scan-barcode"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+
+                        </div>
+
+                    </div>
+
+                    <div class="space-y-1">
+
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Precio USD</label>
+
+                        <input type="number" id="p-price" class="w-full" placeholder="0.00" step="0.01">
+
+                    </div>
+
+                    <div class="space-y-1">
+
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Existencia</label>
+
+                        <input type="number" id="p-qty" class="w-full" value="0">
+
+                    </div>
+
+
+
+                    <div class="md:col-span-4 space-y-1">
+
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">URL Imagen (Opcional)</label>
+
+                        <input type="text" id="p-image" class="w-full" placeholder="https://ejemplo.com/imagen.jpg">
+
+                    </div>
+
+                    <div class="flex items-end">
+
+                        <button onclick="addProduct()"
+                            class="action-btn w-full h-[46px] flex items-center justify-center gap-2">
+
+                            <i data-lucide="plus"></i> Guardar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div id="load-bulk" class="aurora-card p-6 hidden">
+
+                <p class="text-xs text-slate-400 mb-2 italic">Formato: Nombre, Código, Precio, Existencia, URL_Imagen
+                </p>
+
+                <textarea id="bulk-data" rows="3" class="w-full font-mono text-xs mb-3"
+                    placeholder="Pastilla Freno, PF-100, 25.50, 10, https://image.com/1.jpg"></textarea>
+
+                <button onclick="processBulk()" class="action-btn text-xs py-2 px-6">Procesar Lote</button>
+
+            </div>
+
+
+
+            <!-- Tabla de Stock -->
+
+            <div class="aurora-card overflow-hidden">
+
+                <div class="overflow-x-auto">
+
+                    <table class="w-full text-left">
+
+                        <thead>
+
+                            <tr class="bg-slate-900/50 border-b border-white/5">
+
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase">Producto</th>
+
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase">Código</th>
+
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase text-center">
+                                    Gestión Stock</th>
+
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase text-right">Precio
+                                    USD</th>
+
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase text-right">Acción
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="inventory-table-body" class="divide-y divide-white/5"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+
+
+        <!-- SECCIÓN: POS (VENTA) -->
+
+        <section id="section-pos" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <div class="lg:col-span-8 space-y-4">
+                    <div class="relative group">
+                        <div
+                            class="aurora-card p-2 flex items-center px-6 focus-within:border-orange-500 transition-all">
+                            <button onclick="toggleAllProducts()"
+                                class="p-2 hover:bg-orange-500/20 rounded-lg transition-colors group">
+                                <i data-lucide="search" class="text-slate-500 group-hover:text-orange-500"></i>
+                            </button>
+                            <input type="text" id="pos-search"
+                                class="w-full bg-transparent border-none focus:ring-0 text-xl py-4 text-white"
+                                placeholder="Busca por nombre o código..." oninput="advancedSearch(this.value)">
+                        </div>
+
+                        <div id="pos-results"
+                            class="hidden absolute z-50 w-full mt-2 aurora-card bg-slate-900 border border-orange-500/30 shadow-2xl max-h-[400px] overflow-y-auto">
+                        </div>
+                    </div>
+
+                    <div class="aurora-card p-6 min-h-[500px]">
+                        <table class="w-full">
+                            <thead class="border-b border-white/5">
+                                <tr class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+                                    <th class="pb-4 text-left">Producto</th>
+                                    <th class="pb-4 text-center">Cantidad</th>
+                                    <th class="pb-4 text-right">Subtotal</th>
+                                    <th class="pb-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-body">
+                                <tr>
+                                    <td colspan="4"
+                                        class="py-20 text-center text-slate-600 text-xs uppercase font-bold tracking-widest">
+                                        El carrito está vacío
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4">
+                    <div class="aurora-card p-8 space-y-6 sticky top-0">
+                        <h2 class="text-xl font-black flex items-center gap-2">
+                            <i data-lucide="receipt" class="text-orange-500"></i> Cobro de Venta
+                        </h2>
+
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center text-slate-400">
+                                <span class="text-xs font-bold uppercase">Total USD</span>
+                                <span class="text-2xl font-mono font-bold text-white" id="total-usd">$0.00</span>
+                            </div>
+
+                            <div class="p-6 bg-orange-600/10 rounded-2xl border border-orange-500/20">
+                                <span class="text-[10px] font-black text-orange-500 uppercase block mb-1">Total Bs.
+                                    (Tasa BCV)</span>
+                                <div class="text-4xl font-black text-white" id="total-bs">0.00</div>
+                            </div>
+                        </div>
+
+                        <button onclick="checkout()"
+                            class="action-btn w-full py-5 text-lg flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle"></i> Finalizar Venta
+                        </button>
+
+                        <button onclick="clearCart()"
+                            class="w-full text-xs font-bold text-slate-500 hover:text-rose-500 uppercase tracking-widest">
+                            Vaciar Carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- SECCIÓN: TASA -->
+
+        <section id="section-tasa" class="hidden max-w-md mx-auto py-20">
+
+            <div class="aurora-card p-10 text-center space-y-6">
+
+                <div class="w-16 h-16 bg-orange-600/20 rounded-2xl flex items-center justify-center mx-auto">
+
+                    <i data-lucide="trending-up" class="text-orange-500 w-8 h-8"></i>
+
+                </div>
+
+                <div>
+
+                    <h2 class="text-2xl font-black">Tasa de Cambio</h2>
+
+                    <p class="text-slate-400 text-sm mt-1">Define el valor del Bolívar para ventas hoy.</p>
+
+                </div>
+
+                <input type="number" id="input-tasa" class="w-full text-4xl font-black text-center py-6" step="0.01">
+
+                <button onclick="updateTasa()" class="action-btn w-full py-4">Actualizar Tasa</button>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- SECCIÓN: DASHBOARD -->
+
+        <section id="section-dashboard" class="hidden space-y-6">
+
+            <h1 class="text-4xl font-black">Resumen Operativo</h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+
+                <div class="aurora-card p-6 border-l-4 border-orange-500">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Ventas Procesadas</div>
+                    <div class="text-3xl font-black" id="stat-sales-count">0</div>
+                </div>
+
+                <div class="aurora-card p-6 border-l-4 border-cyan-500">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Valor de Inventario</div>
+                    <div class="text-3xl font-black" id="stat-total-money">$0</div>
+                </div>
+
+                <div class="aurora-card p-6 border-l-4 border-rose-500">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Bajo Stock</div>
+                    <div class="text-3xl font-black text-rose-500" id="stat-low-count">0</div>
+                </div>
+
+                <div class="aurora-card p-6 border-l-4 border-green-500">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Productos Totales</div>
+                    <div class="text-3xl font-black text-green-500" id="stat-total-qty">0</div>
+                </div>
+
+                <div class="aurora-card p-6 border-l-4 border-blue-500">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Productos Diferentes</div>
+                    <div class="text-3xl font-black text-blue-500" id="stat-diff-count">0</div>
+                </div>
+
+            </div>
+
+            <!-- RESUMEN POR DÍA -->
+            <div class="aurora-card p-6 mt-6">
+                <h2 class="text-xl font-black mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar" class="text-orange-500"></i> Total de Ventas por Día
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-900/50 border-b border-white/5">
+                                <th class="px-4 py-2 text-[10px] font-black text-slate-500 uppercase">Fecha</th>
+                                <th class="px-4 py-2 text-[10px] font-black text-slate-500 uppercase text-right">Total
+                                    USD</th>
+                                <th class="px-4 py-2 text-[10px] font-black text-slate-500 uppercase text-right">Total
+                                    Bs</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-by-day-body">
+                            <!-- JS llenará aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- HISTORIAL DE VENTAS -->
+            <div class="aurora-card p-6 mt-6">
+                <h2 class="text-xl font-black mb-4 flex items-center gap-2">
+                    <i data-lucide="clock" class="text-orange-500"></i> Historial de Ventas
+                </h2>
+                <div class="flex flex-col md:flex-row gap-2 mb-4">
+                    <input type="date" id="sales-date-from"
+                        class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                        placeholder="Desde">
+                    <input type="date" id="sales-date-to"
+                        class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                        placeholder="Hasta">
+                    <input type="text" id="sales-search"
+                        class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white flex-1"
+                        placeholder="Buscar producto...">
+                    <button onclick="clearSalesFilters()"
+                        class="text-xs px-3 py-2 rounded-lg bg-slate-800 text-slate-400 hover:text-orange-500">Limpiar</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+    <tr class="bg-slate-900/50 border-b border-white/5 text-[10px] uppercase text-slate-500">
+        <th class="px-4 py-2">Fecha</th>
+        <th class="px-4 py-2">ID</th>
+        <th class="px-4 py-2">Producto</th>
+        <th class="px-4 py-2 text-center">Cant.</th>
+        <th class="px-4 py-2 text-right">USD</th>
+        <th class="px-4 py-2 text-right">Bs</th>
+    </tr>
+</thead>
+                        <tbody id="sales-history-body">
+                            <!-- JS llenará aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+
+
+    </main>
+
+<div id="stock-error-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+    <div class="aurora-card w-full max-w-sm p-8 border border-orange-500/30 text-center animate-in zoom-in duration-300">
+        <div class="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="package-x" class="text-orange-500 w-10 h-10"></i>
+        </div>
+        <h3 class="text-2xl font-black text-white mb-2">Stock Insuficiente</h3>
+        <p class="text-slate-400 mb-8" id="stock-error-message">No hay suficiente cantidad disponible de este producto para completar la venta.</p>
+        <button onclick="document.getElementById('stock-error-modal').classList.add('hidden')" 
+                class="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-2xl transition-all">
+            Entendido
+        </button>
+    </div>
+</div>
+<div id="modal-success" class="hidden fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4">
+    <div class="aurora-card w-full max-w-sm text-center p-8">
+        <i data-lucide="check-circle-2" class="w-16 h-16 text-green-500 mx-auto mb-4"></i>
+        <h2 class="text-2xl font-black text-white">¡Venta Realizada!</h2>
+        <div class="my-6">
+            <p class="text-slate-400">Total Cobrado:</p>
+            <p class="text-3xl font-mono font-bold text-white" id="success-total-usd"></p>
+            <p class="text-lg font-mono text-green-400" id="success-total-bs"></p>
+        </div>
+        <button onclick="document.getElementById('modal-success').classList.add('hidden')" 
+                class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl">Cerrar</button>
+    </div>
+</div>
+
+   <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/script.js"></script>
+
+
+
+</body>
+
+</html>
